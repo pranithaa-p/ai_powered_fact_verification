@@ -12,4 +12,4 @@ DecipherX
 - FastAPI
 - Tavily Search API
 - Groq API
-- Llama 3.xgit --version
+- Llama 3.x
