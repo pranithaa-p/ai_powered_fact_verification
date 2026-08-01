@@ -13,7 +13,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://ai-powered-fact-verification.vercel.app/"
+        "https://ai-powered-fact-verification.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

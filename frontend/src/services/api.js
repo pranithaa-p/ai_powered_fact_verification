@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://ai-powered-fact-verification.onrender.com/api";
+
 const api = axios.create({
-  baseURL: "https://ai-powered-fact-verification.onrender.com/api",
+  baseURL,
   timeout: 60000,
 });
 
