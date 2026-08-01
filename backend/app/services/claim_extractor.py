@@ -1,4 +1,5 @@
 import json
+import re
 from groq import Groq
 from app.config.settings import settings
 
@@ -10,27 +11,18 @@ def extract_claims(text: str):
     prompt = f"""
 You are an expert NLP system.
 
-Your task is to extract all independent factual claims from the text.
+Extract all independent factual claims.
 
 Rules:
-- Split compound statements into separate factual claims.
-- Preserve wording as much as possible.
-- Ignore opinions or questions.
-- Return ONLY valid JSON.
+- Split compound factual statements.
+- Ignore opinions.
+- Ignore personal preferences.
+- Ignore greetings.
+- Ignore questions.
+- If no factual claims exist, return:
+{{"claims":[]}}
 
-Example:
-
-Input:
-Earth is flat. There are 8 days in a week. Sun rises in east.
-
-Output:
-{{
-    "claims":[
-        "Earth is flat",
-        "There are 8 days in a week",
-        "Sun rises in east"
-    ]
-}}
+Return ONLY valid JSON.
 
 Text:
 {text}
@@ -47,8 +39,22 @@ Text:
         temperature=0
     )
 
-    content = response.choices[0].message.content
+    content = response.choices[0].message.content.strip()
 
+    print("LLM Output:")
     print(content)
 
-    return json.loads(content)["claims"]
+    # Remove markdown if present
+    content = content.replace("```json", "").replace("```", "").strip()
+
+    # Extract JSON object if extra text exists
+    match = re.search(r"\{.*\}", content, re.DOTALL)
+
+    if not match:
+        return []
+
+    try:
+        data = json.loads(match.group())
+        return data.get("claims", [])
+    except Exception:
+        return []

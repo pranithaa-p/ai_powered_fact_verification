@@ -9,6 +9,23 @@ def verify_claim(claim: str):
 
     claims = extract_claims(claim)
 
+    # Handle cases where no factual claims are found
+    if not claims:
+        return {
+            "overall_verdict": "NOT ENOUGH INFORMATION",
+            "overall_confidence": 0,
+            "summary": "No factual claims were found in the input.",
+            "results": [
+                {
+                    "claim": claim,
+                    "verdict": "NOT ENOUGH INFORMATION",
+                    "confidence": 0,
+                    "explanation": "The input does not contain a verifiable factual claim. It appears to be an opinion, preference, question, or conversational statement.",
+                    "references": []
+                }
+            ]
+        }
+
     all_results = []
 
     for single_claim in claims:
@@ -37,19 +54,30 @@ def verify_claim(claim: str):
 
         llm_response = verify_with_llm(single_claim, evidence)
 
-        references = []
+        # Handle malformed LLM response
+        if not llm_response:
+            llm_response = {
+                "verdict": "NOT ENOUGH INFORMATION",
+                "confidence": 0,
+                "explanation": "Unable to verify the claim."
+            }
 
-        for result in search_results["results"][:3]:
-            references.append({
+        references = [
+            {
                 "title": result["title"],
                 "url": result["url"]
-            })
+            }
+            for result in search_results["results"][:3]
+        ]
 
         all_results.append({
             "claim": single_claim,
-            "verdict": llm_response["verdict"],
-            "confidence": llm_response["confidence"],
-            "explanation": llm_response["explanation"],
+            "verdict": llm_response.get("verdict", "NOT ENOUGH INFORMATION"),
+            "confidence": llm_response.get("confidence", 0),
+            "explanation": llm_response.get(
+                "explanation",
+                "Unable to verify the claim."
+            ),
             "references": references
         })
 

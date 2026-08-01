@@ -1,8 +1,7 @@
-from fastapi import FastAPI
-from app.api.routes import router
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import Request
-
+from app.api.routes import router
 
 app = FastAPI(
     title="Decipher API",
@@ -10,8 +9,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.include_router(router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+app.include_router(router)
 
 @app.get("/")
 def root():
@@ -19,7 +28,6 @@ def root():
         "message": "Welcome to Decipher API",
         "status": "Running"
     }
-
 
 @app.get("/api/health")
 def health_check():
